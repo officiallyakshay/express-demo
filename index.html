@@ -1,0 +1,55 @@
+<html>
+<head>
+  <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js'></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body>
+  <div id='root'></div>
+  <script type='text/babel'>
+  const { Component } = React;
+  const { render } = ReactDOM;
+
+  class App extends Component {
+    constructor() {
+      super();
+      this.state = {
+        users: [],
+        name: '',
+        error: ''
+      }
+      this.createUser = this.createUser.bind(this);
+      this.destroyUser = this.destroyUser.bind(this);
+    }
+    async destroyUser() {
+      this.setState({ error: '' });
+    }
+    async createUser() {
+      const users = [...this.state.users, (await axios.post('/api/users', { name: this.state.name })).data];
+      this.setState({ users });
+    }
+    async componentDidMount() {
+      this.setState({ users: ( await axios.get('/api/users')).data});
+    }
+    render() {
+      const { users, name } = this.state;
+      const { createUser } = this;
+      return (
+        <div>
+          <input value = { name } onChange = { ev => this.setState({ name: ev.target.value }) } />
+          <button onClick = { createUser }>Create</button>
+          <ul>
+            {
+              users.map(user => <li key={ user.id }>{ user.name }</li>)
+            }
+          </ul>
+        </div>
+        )
+    }
+  }
+
+  render( < App /> , root )
+  </script>
+</body>
+</html>
